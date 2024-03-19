@@ -13,6 +13,7 @@ async def payment(pay: Pay):
     headers = {
     'Content-Type': 'application/x-www-form-urlencoded'
     }
+    print(payload)
     res_auth = requests.request("POST", url_token, headers=headers, data=payload)
     if res_auth.status_code != 200:
         return {"msg": "Unauthorized User"}
@@ -43,12 +44,13 @@ async def payment(pay: Pay):
             }
         }
     })
+    print(payload)
     headers = {
         'Authorization': 'Bearer ' + data['access_token'],
         'Cache-Control': 'no-cache',
         'Content-Type': 'application/json'
     }
-
+    print(payload)
     res_link = requests.request("POST", url, headers=headers, data=payload)
     if res_link.status_code != 200:
         return {"msg": "invalid_request"}
@@ -67,10 +69,10 @@ async def payment(pay: Pay):
 async def notification(request: Request):
     req = await request.body()
     data = json.loads(req)
-    print(data)
     if data['status'] == "approved":
         print('-----------------------')
-        print(data['final_amount'])
+        print(data['payer']['identification']['number'])
+        final_amount = data['final_amount']
         url_token = settings.ISPCUBE_URL_HOST + "/api/sanctum/token"
         payload = json.dumps({
         "username": settings.USERNAME_ISPCUBE,
@@ -108,7 +110,6 @@ async def notification(request: Request):
         }
         print(headers)
         # response = requests.request("POST", url, headers=headers, data=payload)
-
         # print(response.text)
         return {}
     

@@ -24,7 +24,7 @@ async def payment(pay: Pay):
         "external_transaction_id": pay.external_transaction_id,
         "due_date": pay.due_date,
         "last_due_date": pay.last_due_date,
-        "notification_url": settings.HOST+"/notification",
+        "notification_url": settings.HOST_API + "/notification",
         "details": [
             {
             "external_reference": pay.details_external_reference,
@@ -63,15 +63,54 @@ async def payment(pay: Pay):
         "status":link["status"],
     }
 
-
-
 @pay.post("/notification", tags=["Pay"])
 async def notification(request: Request):
-    data = await request.body()
-    payload = json.loads(data)
-    if payload['status'] == "approved":
-        print(payload['payment_methods'])
-        return {'payment_methods':payload['payment_methods']}
+    req = await request.body()
+    data = json.loads(req)
+    print(data)
+    if data['status'] == "approved":
+        print('-----------------------')
+        print(data['final_amount'])
+        url_token = settings.ISPCUBE_URL_HOST + "/api/sanctum/token"
+        payload = json.dumps({
+        "username": settings.USERNAME_ISPCUBE,
+        "password": settings.PASSWORD_ISPCUBE
+        })
+        headers = {
+        'login-type': settings.LOGIN_TYPE,
+        'client-id': settings.CLIENT_ID_ISPCUBE,
+        'api-key': settings.API_KEY,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+        }
+        res_token = requests.request("POST", url_token, headers=headers, data=payload)
+        if res_token.status_code != 200:
+            return {}
+    
+        data = res_token.json()
+        print(data['token'])
+
+        url = settings.ISPCUBE_URL_HOST + "/api/cash/payment_save"
+
+        payload = json.dumps({
+        "customer_id": 334455,
+        "amount": "100.20",
+        "destiny_id": 4
+        })
+        headers = {
+        'login-type': settings.LOGIN_TYPE,
+        'username': settings.USERNAME_ISPCUBE,
+        'Authorization': 'Bearer ' + data['token'],
+        'Accept': 'application/json',
+        'api-key': settings.API_KEY,
+        'client-id': settings.CLIENT_ID_ISPCUBE,
+        'Content-Type': 'application/json'
+        }
+        print(headers)
+        # response = requests.request("POST", url, headers=headers, data=payload)
+
+        # print(response.text)
+        return {}
     
 
 @pay.get("/search/{id}", tags=["Pay"])

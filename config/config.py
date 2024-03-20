@@ -1,11 +1,12 @@
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from pydantic_settings import BaseSettings
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
-class Settings:
+class Settings(BaseSettings):
     USERNAME_PAYPERTIC:str = os.getenv('USERNAME_PAYPERTIC')
     PASSWORD_PAYPERTIC:str = os.getenv('PASSWORD_PAYPERTIC')
     GRANT_TYPE:str = os.getenv('GRANT_TYPE')

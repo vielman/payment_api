@@ -23,5 +23,6 @@ class Link(BaseModel):
     form_url:Optional[str] = None
     final_amount:Optional[float] = None
     status:Optional[str] = None
+    notification_url:Optional[str] = None
 
     
